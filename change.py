@@ -14,34 +14,35 @@ class Screen(tk.Tk):
 
     def build(self):
         self.message = tk.StringVar()
-        main_frame = ttk.LabelFrame(self.root,text='Input Area For Search-Pattern')
-        main_frame.grid(row=0, column=0, padx=3, pady=3, sticky=('N','E','S','W'))
-        ttk.Label(main_frame, text='Server:').grid(row=0, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(main_frame, text='Port:').grid(row=1, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(main_frame, text='Database:').grid(row=2, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(main_frame, text='User:').grid(row=3, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(main_frame, text='Schema:').grid(row=4, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(main_frame, text='Field:').grid(row=5, column=0, padx=3, pady=3, sticky=('E','W'))
-        self.server = ttk.Entry(main_frame)
+        self.main_frame = ttk.LabelFrame(self.root,text='Input Area For Search-Pattern')
+        #self.main_frame.columnconfigure(0, weight=1)
+        self.main_frame.grid(row=0, column=0, padx=3, pady=3, sticky=('N','E','S','W'))
+        ttk.Label(self.main_frame, text='Server:').grid(row=0, column=0, padx=3, pady=3, sticky=('E','W'))
+        ttk.Label(self.main_frame, text='Port:').grid(row=1, column=0, padx=3, pady=3, sticky=('E','W'))
+        ttk.Label(self.main_frame, text='Database:').grid(row=2, column=0, padx=3, pady=3, sticky=('E','W'))
+        ttk.Label(self.main_frame, text='User:').grid(row=3, column=0, padx=3, pady=3, sticky=('E','W'))
+        ttk.Label(self.main_frame, text='Schema:').grid(row=4, column=0, padx=3, pady=3, sticky=('E','W'))
+        ttk.Label(self.main_frame, text='Field:').grid(row=5, column=0, padx=3, pady=3, sticky=('E','W'))
+        self.server = ttk.Entry(self.main_frame)
         self.server.grid(row=0, column=1, padx=3, pady=3, sticky=('E','W'))
-        self.port = ttk.Entry(main_frame)
+        self.port = ttk.Entry(self.main_frame)
         self.port.grid(row=1, column=1, padx=3, pady=3, sticky=('E','W'))
-        self.database = ttk.Entry(main_frame)
+        self.database = ttk.Entry(self.main_frame)
         self.database.grid(row=2, column=1, padx=3, pady=3, sticky=('E','W'))
-        self.user = ttk.Entry(main_frame)
+        self.user = ttk.Entry(self.main_frame)
         self.user.grid(row=3, column=1, padx=3, pady=3, sticky=('E','W'))
-        self.schema = ttk.Entry(main_frame)
+        self.schema = ttk.Entry(self.main_frame)
         self.schema.grid(row=4, column=1, padx=3, pady=3, sticky=('E','W'))
-        self.field = ttk.Entry(main_frame)
+        self.field = ttk.Entry(self.main_frame)
         self.field.grid(row=5, column=1, padx=3, pady=3, sticky=('E','W'))
-        tk.Button(main_frame, text='Search', command=self.search).grid(row=10, column=1, padx=3, pady=3, sticky=('E','W'))
-        tk.Button(main_frame, text='Connect', command=self.connect).grid(row=10, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(main_frame, text="", textvariable=self.message).grid(row=15, column=0, columnspan=2, padx=3, pady=3, sticky=('E','W'))
+        tk.Button(self.main_frame, text='Search', command=self.search).grid(row=10, column=1, padx=3, pady=3, sticky=('E','W'))
+        tk.Button(self.main_frame, text='Connect', command=self.connect).grid(row=10, column=0, padx=3, pady=3, sticky=('E','W'))
+        ttk.Label(self.main_frame, text="", textvariable=self.message).grid(row=15, column=0, columnspan=2, padx=3, pady=3, sticky=('E','W'))
         self.server.focus()
 
     def search(self):
         self.text_liste:list = []
-        search_schema = self.schema.get()
+        search_schema = self.schema.get().upper()
         search_field = self.field.get()
         col_sql = f"SELECT tabschema, tabname, colname, colno, typename, length, scale FROM syscat.columns WHERE tabschema = '{search_schema}' AND colname = '{search_field}' ORDER BY colno"
         rou_sql = f"SELECT routineschema,routinename,specificname,CASE WHEN routinetype='F' THEN 'Function' WHEN routinetype='P' THEN 'Procedure' ELSE routinetype END"
@@ -58,6 +59,7 @@ class Screen(tk.Tk):
             row = self.db2.fetch()
         for _ in self.text_liste:
             print(_)
+        # K7zP5w&
 
     def connect(self):
         con_server = self.server.get().upper()
