@@ -9,69 +9,143 @@ class Screen(tk.Tk):
         super().__init__(*args, **kwargs)
         self.root = self
         self.root.title('Database Attribute Finder by M. Wagner')
-        self.db2 = driver.Db2()
+        self.driver = driver.Db2()
         pass
 
     def build(self):
-        self.message = tk.StringVar()
-        self.main_frame = ttk.LabelFrame(self.root,text='Input Area For Search-Pattern')
-        #self.main_frame.columnconfigure(0, weight=1)
-        self.main_frame.grid(row=0, column=0, padx=3, pady=3, sticky=('N','E','S','W'))
-        ttk.Label(self.main_frame, text='Server:').grid(row=0, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(self.main_frame, text='Port:').grid(row=1, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(self.main_frame, text='Database:').grid(row=2, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(self.main_frame, text='User:').grid(row=3, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(self.main_frame, text='Schema:').grid(row=4, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(self.main_frame, text='Field:').grid(row=5, column=0, padx=3, pady=3, sticky=('E','W'))
-        self.server = ttk.Entry(self.main_frame)
-        self.server.grid(row=0, column=1, padx=3, pady=3, sticky=('E','W'))
-        self.port = ttk.Entry(self.main_frame)
-        self.port.grid(row=1, column=1, padx=3, pady=3, sticky=('E','W'))
-        self.database = ttk.Entry(self.main_frame)
-        self.database.grid(row=2, column=1, padx=3, pady=3, sticky=('E','W'))
-        self.user = ttk.Entry(self.main_frame)
-        self.user.grid(row=3, column=1, padx=3, pady=3, sticky=('E','W'))
-        self.schema = ttk.Entry(self.main_frame)
-        self.schema.grid(row=4, column=1, padx=3, pady=3, sticky=('E','W'))
-        self.field = ttk.Entry(self.main_frame)
-        self.field.grid(row=5, column=1, padx=3, pady=3, sticky=('E','W'))
-        tk.Button(self.main_frame, text='Search', command=self.search).grid(row=10, column=1, padx=3, pady=3, sticky=('E','W'))
-        tk.Button(self.main_frame, text='Connect', command=self.connect).grid(row=10, column=0, padx=3, pady=3, sticky=('E','W'))
-        ttk.Label(self.main_frame, text="", textvariable=self.message).grid(row=15, column=0, columnspan=2, padx=3, pady=3, sticky=('E','W'))
-        self.server.focus()
+        self.db_screen = ttk.LabelFrame(self.root,text='Database Connection Parameter')
+        self.db_screen.grid(row=0, column=0, padx=3, pady=3, sticky=('N','E','S','W'))
+        ttk.Label(self.db_screen,text='Server').grid(row=1,column=0, padx=3, pady=3, sticky=('E','W'))
+        ttk.Label(self.db_screen,text='Port').grid(row=1,column=1, padx=3, pady=3, sticky=('E','W'))
+        ttk.Label(self.db_screen,text='Database').grid(row=1,column=2, padx=3, pady=3, sticky=('E','W'))
+        ttk.Label(self.db_screen,text='User').grid(row=1,column=3, padx=3, pady=3, sticky=('E','W'))
+        self.server_col = ttk.Entry(self.db_screen)
+        self.server_col.grid(row=2, column=0, padx=3, pady=3, sticky=('E','W'))
+        self.port_col = ttk.Entry(self.db_screen)
+        self.port_col.grid(row=2, column=1, padx=3, pady=3, sticky=('E','W'))
+        self.database_col = ttk.Entry(self.db_screen)
+        self.database_col.grid(row=2, column=2, padx=3, pady=3, sticky=('E','W'))
+        self.user_col = ttk.Entry(self.db_screen)
+        self.user_col.grid(row=2, column=3, padx=3, pady=3, sticky=('E','W'))
 
-    def search(self):
-        self.text_liste:list = []
-        search_schema = self.schema.get().upper()
-        search_field = self.field.get()
-        col_sql = f"SELECT tabschema, tabname, colname, colno, typename, length, scale FROM syscat.columns WHERE tabschema = '{search_schema}' AND colname = '{search_field}' ORDER BY colno"
-        rou_sql = f"SELECT routineschema,routinename,specificname,CASE WHEN routinetype='F' THEN 'Function' WHEN routinetype='P' THEN 'Procedure' ELSE routinetype END"
-        rou_sql += f" FROM syscat.routines  WHERE routineschema = '{search_schema}' AND cast(text as varchar(20000)) LIKE '%{search_field}%';"
-        self.db2.exec(col_sql)
-        row = self.db2.fetch()
-        while row != False:
-            self.text_liste.append(row)
-            row = self.db2.fetch()
-        self.db2.exec(rou_sql)
-        row = self.db2.fetch()
-        while row != False:
-            self.text_liste.append(row)
-            row = self.db2.fetch()
-        for _ in self.text_liste:
-            print(_)
-        # K7zP5w&
+        self.search_screen = ttk.LabelFrame(self.root,text='Input Area For Search-Pattern')
+        self.search_screen.grid(row=10, column=0, padx=3, pady=3, sticky=('N','E','S','W'))
+        ttk.Label(self.search_screen, text='Column-Name:').grid(row=0, column=0, padx=3, pady=3, sticky=('E','W'))
+        self.column = ttk.Entry(self.search_screen)
+        self.column.grid(row=0, column=1, padx=3, pady=3, sticky=('E','W'))
+        ttk.Label(self.search_screen, text='Schema-Name:').grid(row=1, column=0, padx=3, pady=3, sticky=('E','W'))
+        self.schema = ttk.Entry(self.search_screen)
+        self.schema.grid(row=1, column=1, padx=3, pady=3, sticky=('E','W'))
 
-    def connect(self):
-        con_server = self.server.get().upper()
-        con_port = self.port.get()
-        con_database = self.database.get().upper()
-        con_user = self.user.get().upper()
-        tmp_pwd = simpledialog.askstring(title='----- PASSWORD -----', prompt=f'   PASSWORD for {con_user}   ', show="?")
-        con_flag = self.db2.open(con_server, con_port, con_database, '', con_user, tmp_pwd)
-        if con_flag:
-            tmp_pwd = ""
-            self.message.set(f'User:{con_user} on Database:{con_database} Connected')
-        pass
+        ttk.Button(self.search_screen, text='SEARCH', command=self.start_search).grid(row=0, column=2, padx=3, pady=3, sticky=('N','E','S','W'), rowspan=2)
+
+        ttk.Label(self.search_screen, text='Table:').grid(row=10, column=0, padx=3, pady=3, sticky=('E','W'))
+        self.tbl_scroll = ttk.Scrollbar(self.search_screen)
+        self.tbl_scroll.grid(row=10, column=13, rowspan=6, padx=3, pady=3, sticky=('N','S'))
+        self.tbl_list = tk.Listbox(self.search_screen, height=6, width=80, yscrollcommand = self.tbl_scroll.set)
+        self.tbl_list.grid(row=10, column=1, columnspan=12, padx=3, pady=3, sticky=('E','W'))
+        self.tbl_scroll.config(command=self.tbl_list.yview)
+        self.tbl_list['yscrollcommand'] = self.tbl_scroll.set
+
+        ttk.Label(self.search_screen, text='View:').grid(row=20, column=0, padx=3, pady=3, sticky=('E','W'))
+        self.vie_scroll = ttk.Scrollbar(self.search_screen)
+        self.vie_scroll.grid(row=20, column=13, rowspan=6, padx=3, pady=3, sticky=('N','S'))
+        self.vie_list = tk.Listbox(self.search_screen, height=6, width=80, yscrollcommand = self.vie_scroll.set)
+        self.vie_list.grid(row=20, column=1, columnspan=12, padx=3, pady=3, sticky=('E','W'))
+        self.vie_scroll.config(command=self.vie_list.yview)
+        self.vie_list['yscrollcommand'] = self.vie_scroll.set
+
+        ttk.Label(self.search_screen, text='Function:').grid(row=30, column=0, padx=3, pady=3, sticky=('E','W'))
+        self.fun_scroll = ttk.Scrollbar(self.search_screen)
+        self.fun_scroll.grid(row=30, column=13, rowspan=6, padx=3, pady=3, sticky=('N','S'))
+        self.fun_list = tk.Listbox(self.search_screen, height=6, width=80, yscrollcommand = self.fun_scroll.set)
+        self.fun_list.grid(row=30, column=1, columnspan=12, padx=3, pady=3, sticky=('E','W'))
+        self.fun_scroll.config(command=self.fun_list.yview)
+        self.fun_list['yscrollcommand'] = self.fun_scroll.set
+
+        ttk.Label(self.search_screen, text='Procedure:').grid(row=40, column=0, padx=3, pady=3, sticky=('E','W'))
+        self.prc_scroll = ttk.Scrollbar(self.search_screen)
+        self.prc_scroll.grid(row=40, column=13, rowspan=6, padx=3, pady=3, sticky=('N','S'))
+        self.prc_list = tk.Listbox(self.search_screen, height=6, width=80, yscrollcommand = self.prc_scroll.set)
+        self.prc_list.grid(row=40, column=1, columnspan=12, padx=3, pady=3, sticky=('E','W'))
+        self.prc_scroll.config(command=self.prc_list.yview)
+        self.prc_list['yscrollcommand'] = self.prc_scroll.set
+
+        self.server_col.focus_set()
+
+    def start_search(self):
+        print("OK. Ich suche ...")
+        table_data:list = []
+        view_data:list = []
+        func_data:list = []
+        proc_data:list = []
+        server = self.server_col.get()
+        port = self.port_col.get()
+        dbname = self.database_col.get()
+        user = self.user_col.get()
+        pwd = simpledialog.askstring(title=f"{dbname}",\
+            prompt=f"Input password for user >> {user} <<",show="*")
+        try:
+            self.driver.open(server,port,dbname,'',user,pwd)
+            pattern:str = self.column.get().upper()
+            sql = "SELECT COL.TABSCHEMA, COL.TABNAME "
+            sql += "FROM SYSCAT.COLUMNS AS COL JOIN SYSCAT.TABLES AS TAB "
+            sql += "ON (COL.TABSCHEMA,COL.TABNAME) = (TAB.TABSCHEMA,TAB.TABNAME) "
+            sql += f"WHERE TAB.TYPE = 'T' AND COL.COLNAME = '{pattern}'"
+            if self.schema.get() != '':
+                sql += f" AND TAB.TABSCHEMA = '{self.schema.get().upper().strip()}'"
+            table_data = self.search_content(sql)
+            sql = "SELECT COL.TABSCHEMA, COL.TABNAME "
+            sql += "FROM SYSCAT.COLUMNS AS COL JOIN SYSCAT.TABLES AS TAB "
+            sql += "ON (COL.TABSCHEMA,COL.TABNAME) = (TAB.TABSCHEMA,TAB.TABNAME) "
+            sql += f"WHERE TAB.TYPE = 'V' AND COL.COLNAME = '{pattern}'"
+            if self.schema.get() != '':
+                sql += f" AND TAB.TABSCHEMA = '{self.schema.get().upper().strip()}'"
+            view_data = self.search_content(sql)
+            sql = f'''SELECT FUNCSCHEMA, FUNCNAME, SPECIFICNAME FROM SYSCAT.FUNCTIONS WHERE BODY LIKE '%{pattern}%' '''
+            if self.schema.get() != '':
+                sql += f" AND FUNCSCHEMA = '{self.schema.get().upper().strip()}'"
+            func_data = self.search_content(sql)
+            sql = f'''SELECT PROCSCHEMA, PROCNAME, SPECIFICNAME FROM SYSCAT.PROCEDURES WHERE TEXT LIKE '%{pattern}%' '''
+            if self.schema.get() != '':
+                sql += f" AND PROCSCHEMA = '{self.schema.get().upper().strip()}'"
+            proc_data = self.search_content(sql)
+            self.prepare_screen(table_data,view_data,func_data,proc_data)
+        except Exception as e:
+            print(f"DB-ERROR:{e}")
+
+    def search_content(self,sql):
+        data:list = []
+        self.driver.exec(sql)
+        row = self.driver.fetch()
+        while row != False:
+            data.append(row)
+            row = self.driver.fetch()
+        return data
+
+    def prepare_screen(self,table,view,function,procedure):
+        row_num:int = 1
+        self.tbl_list.delete(0,'end')
+        for line in table:
+            self.tbl_list.insert(row_num,f"{line['TABSCHEMA'].strip()}.{line['TABNAME'].strip()}")
+            row_num += 1
+        row_num:int = 1
+        self.vie_list.delete(0,'end')
+        for line in view:
+            self.vie_list.insert(row_num,f"{line['TABSCHEMA'].strip()}.{line['TABNAME'].strip()}")
+            row_num += 1
+        row_num:int = 1
+        self.fun_list.delete(0,'end')
+        for line in function:
+            self.fun_list.insert(row_num,f"{line['FUNCSCHEMA'].strip()}.{line['FUNCNAME'].strip()} ({line['SPECIFICNAME'].strip()})")
+            row_num += 1
+        row_num:int = 1
+        self.prc_list.delete(0,'end')
+        for line in procedure:
+            self.prc_list.insert(row_num,f"{line['PROCSCHEMA'].strip()}.{line['PROCNAME'].strip()} ({line['SPECIFICNAME'].strip()})")
+            row_num += 1
+
+
 
 class Finder():
 
