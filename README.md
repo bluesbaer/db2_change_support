@@ -1,6 +1,6 @@
 # db2_change_support
 
-**WHAT**
+**WHAT**   
 Sometimes you have to change an field in an table.   
 Then there is the question:   
 *Do I use this field in any other table, view, function or procedure?*   
